@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Play Castaway Island early</title>
+<title>Welcome to Castaway Island!</title>
 <meta name="description" content="Sign up to test Castaway Island on iPhone or Android.">
 <meta property="og:title" content="Play Castaway Island early">
 <meta property="og:description" content="A little survival game where you get stranded with strangers. Help me test it.">
@@ -14,53 +14,63 @@
 </head>
 <body>
 <main class="card">
-  <h1>Hey, thanks for wanting to play!</h1>
+  <h1>Welcome to Castaway Island!</h1>
 
-  <p>Castaway Island is a little game I’ve been building on my own. You get stranded on an island with a bunch of strangers. You make friends, you make enemies, you try not to starve, and every few nights somebody gets voted off.</p>
+  <p class="lead">The tribe has spoken. Apparently, quite a few of you want in!</p>
 
-  <p>It’s still a work in progress. Some things will break, some things will be weird, and that’s exactly why I’d love your help.</p>
+  <p>Hey! I’m Ron, and I’ve been building this Survivor-inspired game on my own.</p>
 
-  <h2>What testing looks like</h2>
-  <ul>
-    <li>You play it on your phone, whenever you feel like it.</li>
-    <li>There’s a <b>DM dev</b> button inside the game. Tap it any time and your message comes straight to me.</li>
-    <li>Tell me everything. Bugs, funny moments, things that annoyed you, things that let you down. The disappointing stuff helps me just as much as the fun stuff.</li>
-  </ul>
+  <p>Make friends, form alliances, tell lies, find idols, and try not to get voted out by someone who promised you they had your back.</p>
+
+  <h2>Before you jump off the boat…</h2>
+
+  <p>The game is still in development. Expect bugs, weird moments, and contestants making questionable decisions (that last part is intentional).</p>
+
+  <p>The character models also have some issues. Awkward poses, weird animations, occasional clipping… but hey, who doesn’t have a little clipping issue?</p>
+
+  <h2>What do I need from you?</h2>
+
+  <p>Play whenever you like! There’s a <b>DM Dev</b> button in the game that sends your feedback straight to me.</p>
+
+  <p>Tell me everything: bugs, funny moments, frustrations, and glorious blindsides. You won’t get voted out for complaining. Probably.</p>
 
   <form id="signup" novalidate>
     <fieldset class="phones">
-      <legend>What phone are you on?</legend>
+      <legend>What phone are you bringing?</legend>
       <label class="phone"><input type="radio" name="platform" value="ios" required><span>iPhone</span></label>
       <label class="phone"><input type="radio" name="platform" value="android" required><span>Android</span></label>
-      <label class="phone"><input type="radio" name="platform" value="both" required><span>Both</span></label>
+      <label class="phone"><input type="radio" name="platform" value="both" required><span>Both<small>playing both sides, I see</small></span></label>
     </fieldset>
 
     <label for="email">Your email</label>
     <input id="email" name="email" type="email" autocomplete="email" inputmode="email" required placeholder="you@example.com">
-    <p class="hint" id="emailHint">Pick your phone first and I’ll tell you which email works best.</p>
-    <p class="promise">Don’t worry, I’m only using this to send you the test invite and stuff about this test. No newsletters, no spam, and it never goes to anyone else.</p>
+    <p class="promise">For your test invite and test updates only. No spam, no newsletters.</p>
+    <p class="hint" id="emailHint" hidden></p>
 
-    <label for="name">What should I call you? <span class="opt">(optional, your Reddit name is fine)</span></label>
-    <input id="name" name="name" type="text" autocomplete="nickname" maxlength="80">
+    <label for="name">What should I call you? <span class="opt">(Optional)</span></label>
+    <input id="name" name="name" type="text" autocomplete="nickname" maxlength="80" placeholder="Your name or Reddit username works!">
 
-    <label for="note">Anything you want to tell me? <span class="opt">(optional)</span></label>
-    <textarea id="note" name="note" rows="3" maxlength="1500"></textarea>
+    <label for="note">Anything else? <span class="opt">(Optional)</span></label>
+    <textarea id="note" name="note" rows="3" maxlength="1500" placeholder="Questions, suggestions, Survivor hot takes…"></textarea>
 
     <!-- Nobody sees this. Bots fill it in. -->
     <div class="trap" aria-hidden="true"><label>Website <input name="website" type="text" tabindex="-1" autocomplete="off"></label></div>
 
     <label class="agree"><input type="checkbox" id="agree" required><span>I’ve read the <a href="terms.html" target="_blank" rel="noopener">tester terms</a> and I’m good with them.</span></label>
 
-    <button type="submit" id="go">Count me in</button>
+    <button type="submit" id="go">Put me on the boat!</button>
     <p class="error" id="error" role="alert" hidden></p>
   </form>
 
   <div id="done" hidden>
-    <h2>You’re in!</h2>
-    <p id="doneText">I’ll send the invite as soon as a spot opens up. It might take a little while, a lot of you signed up. Thank you, really.</p>
+    <h2>You’re on the boat!</h2>
+    <p id="doneText">I’ll send your invite as soon as a spot opens up. A lot of you signed up, so it might take a little while.</p>
   </div>
 
-  <p class="mine">Castaway Island, the idea and everything in the game, is mine. Testing it doesn’t change that, it just makes it better. <a href="terms.html" target="_blank" rel="noopener">Tester terms</a></p>
+  <p class="signoff">Thanks for joining me on this little adventure. Can’t wait to hear how your season goes!</p>
+  <p class="sig">Ron</p>
+
+  <p class="mine">Castaway Island and everything in it belongs to me. Testing it just makes it better. <a href="terms.html" target="_blank" rel="noopener">Tester terms</a></p>
 </main>
 
 <script>
@@ -76,6 +86,7 @@
   form.addEventListener("change", function (e) {
     if (e.target.name !== "platform") return;
     var v = e.target.value;
+    hint.hidden = false;
     hint.textContent = v === "ios"
       ? "Use the email on your Apple ID. That’s where TestFlight sends the invite."
       : v === "android"
@@ -83,7 +94,7 @@
         : "Use the email that’s on your Apple ID and your Google account, if they’re the same one. If not, sign up once for each.";
   });
 
-  function fail(msg) { error.textContent = msg; error.hidden = false; go.disabled = false; go.textContent = "Count me in"; }
+  function fail(msg) { error.textContent = msg; error.hidden = false; go.disabled = false; go.textContent = "Put me on the boat!"; }
 
   form.addEventListener("submit", function (e) {
     e.preventDefault();
@@ -103,7 +114,7 @@
       .then(function (res) {
         if (!res.ok) return fail(res.error === "email" ? "That email doesn’t look quite right." : "Something went wrong on my end. Mind trying again in a minute?");
         form.hidden = true;
-        if (res.already) document.getElementById("doneText").textContent = "You were already on the list, so you’re all set. I’ll send the invite as soon as a spot opens up.";
+        if (res.already) document.getElementById("doneText").textContent = "You were already on the list, so you’re all set. I’ll send your invite as soon as a spot opens up.";
         document.getElementById("done").hidden = false;
         window.scrollTo({ top: 0, behavior: "smooth" });
       })
