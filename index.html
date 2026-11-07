@@ -56,7 +56,7 @@
     <!-- Nobody sees this. Bots fill it in. -->
     <div class="trap" aria-hidden="true"><label>Website <input name="website" type="text" tabindex="-1" autocomplete="off"></label></div>
 
-    <label class="agree"><input type="checkbox" id="agree" required><span>I’ve read the <a href="terms.html" target="_blank" rel="noopener">tester terms</a> and I’m good with them.</span></label>
+    <label class="agree"><input type="checkbox" id="agree" required><span>I’ve read the <a href="terms.html" target="_blank">tester terms</a> and I’m good with them.</span></label>
 
     <button type="submit" id="go">Put me on the boat!</button>
     <p class="error" id="error" role="alert" hidden></p>
@@ -70,7 +70,7 @@
   <p class="signoff">Thanks for joining me on this little adventure. Can’t wait to hear how your season goes!</p>
   <p class="sig">Ron</p>
 
-  <p class="mine">Castaway Island and everything in it belongs to me. Testing it just makes it better. <a href="terms.html" target="_blank" rel="noopener">Tester terms</a></p>
+  <p class="mine">Castaway Island and everything in it belongs to me. Testing it just makes it better. <a href="terms.html" target="_blank">Tester terms</a></p>
 </main>
 
 <script>
@@ -81,6 +81,23 @@
   var hint = document.getElementById("emailHint");
   var error = document.getElementById("error");
   var go = document.getElementById("go");
+  // What they typed survives a trip to the terms and back (a tester's report, 7 Nov 2026).
+  var KEEP = "castaway-tester-form";
+  function save() {
+    var p = form.querySelector("input[name=platform]:checked");
+    try { localStorage.setItem(KEEP, JSON.stringify({ platform: p ? p.value : "", email: form.email.value, name: form.name.value,
+      note: form.note.value, agree: document.getElementById("agree").checked })); } catch (e) {}
+  }
+  try {
+    var kept = JSON.parse(localStorage.getItem(KEEP) || "null");
+    if (kept) {
+      if (kept.platform) { var r = form.querySelector("input[name=platform][value=" + kept.platform + "]"); if (r) { r.checked = true; } }
+      form.email.value = kept.email || ""; form.name.value = kept.name || ""; form.note.value = kept.note || "";
+      document.getElementById("agree").checked = !!kept.agree;
+    }
+  } catch (e) {}
+  form.addEventListener("input", save);
+  form.addEventListener("change", save);
   var source = new URLSearchParams(location.search).get("from") || (document.referrer.indexOf("reddit") >= 0 ? "reddit" : "");
 
   form.addEventListener("change", function (e) {
@@ -88,10 +105,10 @@
     var v = e.target.value;
     hint.hidden = false;
     hint.textContent = v === "ios"
-      ? "Use the email on your Apple ID. That’s where TestFlight sends the invite."
+      ? "Any email you check is fine. You’ll open the TestFlight invite on your iPhone."
       : v === "android"
         ? "Use the Google account (Gmail) that’s signed in on your phone. Google Play only lets that account in."
-        : "Use the email that’s on your Apple ID and your Google account, if they’re the same one. If not, sign up once for each.";
+        : "Use the Google account (Gmail) that’s signed in on your Android. The iPhone invite works with it too.";
   });
 
   function fail(msg) { error.textContent = msg; error.hidden = false; go.disabled = false; go.textContent = "Put me on the boat!"; }
@@ -114,6 +131,7 @@
       .then(function (res) {
         if (!res.ok) return fail(res.error === "email" ? "That email doesn’t look quite right." : "Something went wrong on my end. Mind trying again in a minute?");
         form.hidden = true;
+        try { localStorage.removeItem(KEEP); } catch (e) {}
         if (res.already) document.getElementById("doneText").textContent = "You were already on the list, so you’re all set. I’ll send your invite as soon as a spot opens up.";
         document.getElementById("done").hidden = false;
         window.scrollTo({ top: 0, behavior: "smooth" });
