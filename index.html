@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Play Castaway Island early</title>
+<meta name="description" content="Sign up to test Castaway Island on iPhone or Android.">
+<meta property="og:title" content="Play Castaway Island early">
+<meta property="og:description" content="A little survival game where you get stranded with strangers. Help me test it.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Righteous&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main class="card">
+  <h1>Hey, thanks for wanting to play!</h1>
+
+  <p>Castaway Island is a little game I’ve been building on my own. You get stranded on an island with a bunch of strangers. You make friends, you make enemies, you try not to starve, and every few nights somebody gets voted off.</p>
+
+  <p>It’s still a work in progress. Some things will break, some things will be weird, and that’s exactly why I’d love your help.</p>
+
+  <h2>What testing looks like</h2>
+  <ul>
+    <li>You play it on your phone, whenever you feel like it.</li>
+    <li>There’s a <b>DM dev</b> button inside the game. Tap it any time and your message comes straight to me.</li>
+    <li>Tell me everything. Bugs, funny moments, things that annoyed you, things that let you down. The disappointing stuff helps me just as much as the fun stuff.</li>
+  </ul>
+
+  <form id="signup" novalidate>
+    <fieldset class="phones">
+      <legend>What phone are you on?</legend>
+      <label class="phone"><input type="radio" name="platform" value="ios" required><span>iPhone</span></label>
+      <label class="phone"><input type="radio" name="platform" value="android" required><span>Android</span></label>
+      <label class="phone"><input type="radio" name="platform" value="both" required><span>Both</span></label>
+    </fieldset>
+
+    <label for="email">Your email</label>
+    <input id="email" name="email" type="email" autocomplete="email" inputmode="email" required placeholder="you@example.com">
+    <p class="hint" id="emailHint">Pick your phone first and I’ll tell you which email works best.</p>
+    <p class="promise">Don’t worry, I’m only using this to send you the test invite and stuff about this test. No newsletters, no spam, and it never goes to anyone else.</p>
+
+    <label for="name">What should I call you? <span class="opt">(optional, your Reddit name is fine)</span></label>
+    <input id="name" name="name" type="text" autocomplete="nickname" maxlength="80">
+
+    <label for="note">Anything you want to tell me? <span class="opt">(optional)</span></label>
+    <textarea id="note" name="note" rows="3" maxlength="1500"></textarea>
+
+    <!-- Nobody sees this. Bots fill it in. -->
+    <div class="trap" aria-hidden="true"><label>Website <input name="website" type="text" tabindex="-1" autocomplete="off"></label></div>
+
+    <label class="agree"><input type="checkbox" id="agree" required><span>I’ve read the <a href="terms.html" target="_blank" rel="noopener">tester terms</a> and I’m good with them.</span></label>
+
+    <button type="submit" id="go">Count me in</button>
+    <p class="error" id="error" role="alert" hidden></p>
+  </form>
+
+  <div id="done" hidden>
+    <h2>You’re in!</h2>
+    <p id="doneText">I’ll send the invite as soon as a spot opens up. It might take a little while, a lot of you signed up. Thank you, really.</p>
+  </div>
+
+  <p class="mine">Castaway Island, the idea and everything in the game, is mine. Testing it doesn’t change that, it just makes it better. <a href="terms.html" target="_blank" rel="noopener">Tester terms</a></p>
+</main>
+
+<script>
+(function () {
+  var ENDPOINT = "https://mnliwbekicoddovhtchb.supabase.co/functions/v1/tester-signup";
+  var TERMS = "2026-11-07";
+  var form = document.getElementById("signup");
+  var hint = document.getElementById("emailHint");
+  var error = document.getElementById("error");
+  var go = document.getElementById("go");
+  var source = new URLSearchParams(location.search).get("from") || (document.referrer.indexOf("reddit") >= 0 ? "reddit" : "");
+
+  form.addEventListener("change", function (e) {
+    if (e.target.name !== "platform") return;
+    var v = e.target.value;
+    hint.textContent = v === "ios"
+      ? "Use the email on your Apple ID. That’s where TestFlight sends the invite."
+      : v === "android"
+        ? "Use the Google account (Gmail) that’s signed in on your phone. Google Play only lets that account in."
+        : "Use the email that’s on your Apple ID and your Google account, if they’re the same one. If not, sign up once for each.";
+  });
+
+  function fail(msg) { error.textContent = msg; error.hidden = false; go.disabled = false; go.textContent = "Count me in"; }
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    error.hidden = true;
+    var platform = (form.querySelector("input[name=platform]:checked") || {}).value;
+    var email = form.email.value.trim();
+    if (!platform) return fail("Which phone are you on? Pick iPhone, Android or both.");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return fail("That email doesn’t look quite right.");
+    if (!document.getElementById("agree").checked) return fail("Give the tester terms a quick look and tick the box.");
+    go.disabled = true; go.textContent = "Sending...";
+    fetch(ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: email, platform: platform, name: form.name.value, note: form.note.value,
+        source: source, terms: TERMS, website: form.website.value })
+    }).then(function (r) { return r.json().catch(function () { return {}; }); })
+      .then(function (res) {
+        if (!res.ok) return fail(res.error === "email" ? "That email doesn’t look quite right." : "Something went wrong on my end. Mind trying again in a minute?");
+        form.hidden = true;
+        if (res.already) document.getElementById("doneText").textContent = "You were already on the list, so you’re all set. I’ll send the invite as soon as a spot opens up.";
+        document.getElementById("done").hidden = false;
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      })
+      .catch(function () { fail("Couldn’t reach me. Check your connection and try again?"); });
+  });
+})();
+</script>
+</body>
+</html>
